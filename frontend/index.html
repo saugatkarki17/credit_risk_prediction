@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Risk Prediction</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+    <div class="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold mb-4 text-center">Credit Risk Prediction</h2>
+
+        <form id="loanForm" class="space-y-4">
+            <input type="number" id="total_debt" placeholder="Total Debt ($)" class="w-full p-2 border rounded" required>
+            <input type="number" id="annual_income" placeholder="Annual Income ($)" class="w-full p-2 border rounded" required>
+            <input type="number" id="fico" placeholder="FICO Score (300-850)" class="w-full p-2 border rounded" required>
+            <input type="number" id="days_with_cr_line" placeholder="Days with Credit Line" class="w-full p-2 border rounded" required>
+            <select id="purpose" class="w-full p-2 border rounded" required>
+                <option value="credit_card">Credit Card</option>
+                <option value="debt_consolidation">Debt Consolidation</option>
+                <option value="educational">Educational</option>
+                <option value="home_improvement">Home Improvement</option>
+                <option value="major_purchase">Major Purchase</option>
+                <option value="small_business">Small Business</option>
+            </select>
+            
+            <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600">
+                Predict Risk
+            </button>
+        </form>
+
+        <div id="result" class="mt-4 text-center"></div>
+    </div>
+
+    <script>
+        document.getElementById('loanForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            let data = {
+                total_debt: parseFloat(document.getElementById('total_debt').value),
+                annual_income: parseFloat(document.getElementById('annual_income').value),
+                fico: parseFloat(document.getElementById('fico').value),
+                days_with_cr_line: parseFloat(document.getElementById('days_with_cr_line').value),
+                purpose: document.getElementById('purpose').value
+            };
+
+            try {
+                let response = await fetch('http://127.0.0.1:5000/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    let errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
+                }
+
+                let result = await response.json();
+
+                document.getElementById('result').innerHTML = `
+                    <p class="text-lg font-bold">Prediction: ${result.prediction === 1 ? "High Risk" : "Low Risk"}</p>
+                    <p class="text-gray-700">Probability: ${result.probability}</p>
+                    <p class="mt-4 font-semibold">Engineered Features:</p>
+                    <ul class="text-sm text-gray-600">
+                        <li>Credit Utilization: ${result.features_engineered.credit_utilization}</li>
+                        <li>Adjusted DTI: ${result.features_engineered.adjusted_dti}</li>
+                        <li>Days Sales Outstanding: ${result.features_engineered.days_sales_outstanding}</li>
+                    </ul>
+                `;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <p class="text-red-500">Error: ${error.message}</p>
+                `;
+                console.error('Fetch error:', error);
+            }
+        });
+    </script>
+</body>
+</html>
