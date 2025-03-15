@@ -2,6 +2,8 @@
 
 ## Overview
 
+###Problem Statement: Predict the probability of a borrower defaulting on a loan.
+
 This project builds a machine learning model to predict credit risk for loan applicants based on financial features. The system uses a dataset (`loan_data.csv`) to train a stacking classifier combining Logistic Regression, Decision Tree, and Random Forest models. The trained model is deployed via a Flask backend and a simple HTML frontend, allowing users to input financial details and receive a risk prediction (Low Risk or High Risk) along with a probability score.
 
 The project includes feature engineering, hyperparameter tuning, model explainability (via SHAP), and a rule-based override to ensure high debt-to-income ratios (DTI) are flagged appropriately.
